@@ -14,8 +14,7 @@ class PersonView:
     def __init__(self, person, x, y):
         self.person = person
         self.pos = Vector2(x, y)
-        v = 1.0 if random.random() > 0.5 else -1.0
-        v = v * random.uniform(0.8, 1.2)
+        v = random.uniform(0.8, 1.2)
         theta = random.uniform(0, 2*math.pi)
         self.vel = 4 * Vector2(v * math.cos(theta), v * math.sin(theta))
         self.adjust_radius = 10 / math.sqrt(1000/math.pi)
