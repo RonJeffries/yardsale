@@ -115,8 +115,16 @@ class Game:
             richest = max(richest, w)
             poorest = min(poorest, w)
         text = f'Min: {poorest:.0f} Max: {richest:.0f} ({richest/1000:.0f}%)'
-        score_surface = self.score_font.render(text, True, "white")
+        score_surface = self.score_font.render(text, True, "green")
         screen.blit(score_surface, (20, screen_size + stats_space*0.5))
+        scale = 200 / richest
+        x = 0
+        top = screen_size
+        for w in wealths:
+            x_pos = x
+            x += 7
+            height = w * scale
+            pygame.draw.rect(screen, "white", (x_pos, screen_size, 5, height))
 
 
     def check_collisions(self):

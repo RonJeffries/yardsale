@@ -26,3 +26,9 @@ class TestPerson:
         p = Person()
         v = PersonView(p, 0, 0)
         assert v.radius == pytest.approx(10.0)
+
+    def test_slice(self):
+        wealths = [i for i in range(1000)]
+        assert len(wealths) == 1000
+        sliced = wealths[250:1000]
+        assert len(sliced) == 750
