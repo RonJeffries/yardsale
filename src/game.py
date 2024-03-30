@@ -12,12 +12,16 @@ screen_size = 750
 
 class PersonView:
     def __init__(self, person, x, y):
+        self.vel = None
         self.person = person
         self.pos = Vector2(x, y)
-        v = random.uniform(0.8, 1.2)
-        theta = random.uniform(0, 2*math.pi)
-        self.vel = 4 * Vector2(v * math.cos(theta), v * math.sin(theta))
+        self.set_random_velocity()
         self.adjust_radius = 10 / math.sqrt(1000/math.pi)
+
+    def set_random_velocity(self):
+        v = random.uniform(0.8, 1.2)
+        theta = random.uniform(0, 2 * math.pi)
+        self.vel = 4 * Vector2(v * math.cos(theta), v * math.sin(theta))
 
     @property
     def radius(self):
@@ -28,6 +32,8 @@ class PersonView:
         return dist <= self.radius + aPersonView.radius
 
     def move(self):
+        if random.random() < 0.005:
+            self.set_random_velocity()
         self.pos += self.vel
         if self.pos.x < self.radius or self.pos.x > screen_size - self.radius:
             self.vel = Vector2(-self.vel.x, self.vel.y)
