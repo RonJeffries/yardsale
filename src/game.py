@@ -8,6 +8,7 @@ from pygame import Vector2
 from person import Person
 
 screen_size = 750
+stats_space = 100
 
 
 class PersonView:
@@ -55,10 +56,12 @@ class Game:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption("Wealth")
-        self.screen = pygame.display.set_mode((screen_size, screen_size))
+        self.screen = pygame.display.set_mode((screen_size, screen_size + stats_space))
         self.clock = pygame.time.Clock()
         self.people = []
         self.populate()
+        if pygame.get_init():
+            self.score_font = pygame.font.SysFont("arial", 32)
 
     def populate(self):
         for i in range(100):
@@ -97,9 +100,23 @@ class Game:
                     pv.move()
             for pv in self.people:
                 pv.draw(screen)
+            self.statistics(self.people, screen)
             self.clock.tick(60)
             pygame.display.flip()
         pygame.quit()
+
+    def statistics(self, views, screen):
+        pygame.draw.line(screen, "green", (0, screen_size), (screen_size, screen_size))
+        richest = views[0].person.wealth
+        poorest = richest
+        for v in views:
+            w = v.person.wealth
+            richest = max(richest, w)
+            poorest = min(poorest, w)
+        text = f'Min: {poorest:.0f} Max: {richest:.0f} ({richest/1000:.0f}%)'
+        score_surface = self.score_font.render(text, True, "white")
+        screen.blit(score_surface, (20, screen_size + stats_space*0.5))
+
 
     def check_collisions(self):
         pairs = itertools.combinations(self.people, 2)
