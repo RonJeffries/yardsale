@@ -7,7 +7,7 @@ from pygame import Vector2
 
 from person import Person
 
-screen_size = 1024
+screen_size = 750
 
 
 class PersonView:
@@ -15,8 +15,9 @@ class PersonView:
         self.person = person
         self.pos = Vector2(x, y)
         v = 1.0 if random.random() > 0.5 else -1.0
+        v = v * random.uniform(0.8, 1.2)
         theta = random.uniform(0, 2*math.pi)
-        self.vel = Vector2(v * math.cos(theta), v * math.sin(theta))
+        self.vel = 4 * Vector2(v * math.cos(theta), v * math.sin(theta))
         self.adjust_radius = 10 / math.sqrt(1000/math.pi)
 
     @property
@@ -35,7 +36,14 @@ class PersonView:
             self.vel = Vector2(self.vel.x, -self.vel.y)
 
     def draw(self, screen):
-        pygame.draw.circle(screen, "red", self.pos, self.radius, 0)
+        wealth = self.person.wealth
+        if wealth < 250:
+            color = "red"
+        elif wealth < 500:
+            color = "yellow"
+        else:
+            color = "cyan"
+        pygame.draw.circle(screen, color, self.pos, max(4, int(self.radius)), 0)
 
 
 class Game:
@@ -68,15 +76,20 @@ class Game:
 
     def main_loop(self):
         running = True
+        moving = False
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_SPACE]:
+                moving = True
             screen = self.screen
             screen.fill("midnightblue")
-            self.check_collisions()
-            for pv in self.people:
-                pv.move()
+            if moving:
+                self.check_collisions()
+                for pv in self.people:
+                    pv.move()
             for pv in self.people:
                 pv.draw(screen)
             self.clock.tick(60)
@@ -86,7 +99,9 @@ class Game:
     def check_collisions(self):
         pairs = itertools.combinations(self.people, 2)
         for p1, p2 in pairs:
-            if p1.colliding(p2):
+            if p1.colliding(p2) and p1.person.wealth > 100 and p2.person.wealth > 100:
                 p1.person.transact(p2.person)
                 p1.vel = -p1.vel
                 p2.vel = -p2.vel
+                p1.move()
+                p2.move()
