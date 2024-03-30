@@ -107,8 +107,9 @@ class Game:
 
     def statistics(self, views, screen):
         pygame.draw.line(screen, "green", (0, screen_size), (screen_size, screen_size))
-        richest = views[0].person.wealth
-        poorest = richest
+        wealths = sorted([view.person.wealth for view in views])
+        richest = wealths[-1]
+        poorest = wealths[0]
         for v in views:
             w = v.person.wealth
             richest = max(richest, w)
