@@ -98,7 +98,7 @@ class Game:
     def check_collisions(self):
         pairs = itertools.combinations(self.people, 2)
         for p1, p2 in pairs:
-            if p1.colliding(p2) and p1.person.wealth > 100 and p2.person.wealth > 100:
+            if p1.colliding(p2): # and p1.person.wealth > 100 and p2.person.wealth > 100:
                 p1.person.transact(p2.person)
                 p1.vel = -p1.vel
                 p2.vel = -p2.vel
