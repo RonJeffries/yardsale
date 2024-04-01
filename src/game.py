@@ -62,6 +62,7 @@ class Game:
         self.populate()
         if pygame.get_init():
             self.score_font = pygame.font.SysFont("arial", 32)
+            self.axis_font = pygame.font.SysFont("arial", 15)
 
     def populate(self):
         for i in range(100):
@@ -106,26 +107,43 @@ class Game:
         pygame.quit()
 
     def statistics(self, views, screen):
-        pygame.draw.line(screen, "green", (0, screen_size), (screen_size, screen_size))
+        pygame.draw.line(screen, "green", (0, screen_size), (screen_size - 55, screen_size))
         wealths = sorted([view.person.wealth for view in views])
+        poorest, richest = self.get_loser_and_winner(views, wealths)
+        self.display_loser_and_winner(poorest, richest, screen)
+        self.draw_histogram(richest, wealths, screen)
+
+    def draw_histogram(self, richest, wealths, screen):
+        self.draw_bars(wealths, richest, screen)
+        scale_text = f'{scale_max(richest)}'
+        scale_surface = self.axis_font.render(scale_text, True, "green")
+        screen.blit(scale_surface, (700, screen_size - 8))
+
+    def draw_bars(self, wealths, richest, screen):
+        scale = stats_space / scale_max(richest)
+        min_height = 2
+        for wealth, x_pos in zip(wealths, itertools.count(7, 7)):
+            self.draw_one_bar(wealth, x_pos, scale, min_height, screen)
+
+    def draw_one_bar(self, wealth, x_pos, scale, min_height, screen):
+        height_of_bar = max(wealth * scale, min_height)
+        bottom_of_graph = screen_size + stats_space
+        top_of_bar = bottom_of_graph - height_of_bar
+        pygame.draw.rect(screen, "white", (x_pos, top_of_bar, 5, height_of_bar))
+
+    def get_loser_and_winner(self, views, wealths):
         richest = wealths[-1]
         poorest = wealths[0]
         for v in views:
             w = v.person.wealth
             richest = max(richest, w)
             poorest = min(poorest, w)
-        text = f'Min: {poorest:.0f} Max: {richest:.0f} ({richest/1000:.0f}%)'
-        score_surface = self.score_font.render(text, True, "green")
-        screen.blit(score_surface, (20, screen_size + stats_space*0.5))
-        scale = 200 / richest
-        x = 0
-        top = screen_size
-        for w in wealths:
-            x_pos = x
-            x += 7
-            height = w * scale
-            pygame.draw.rect(screen, "white", (x_pos, screen_size, 5, height))
+        return poorest, richest
 
+    def display_loser_and_winner(self, poorest, richest, screen):
+        text = f'Min: {poorest:.0f} Max: {richest:.0f} ({richest / 1000:.0f}%)'
+        score_surface = self.score_font.render(text, True, "green")
+        screen.blit(score_surface, (20, screen_size))
 
     def check_collisions(self):
         pairs = itertools.combinations(self.people, 2)
@@ -136,3 +154,11 @@ class Game:
                 p2.vel = -p2.vel
                 p1.move()
                 p2.move()
+
+
+def scale_max(value):
+    table = [1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000]
+    for limit in table:
+        if value < limit:
+            return limit
+    return 100000
