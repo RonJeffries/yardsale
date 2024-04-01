@@ -1,6 +1,6 @@
 import pytest
 
-from game import PersonView
+from game import PersonView, scale_max
 from person import Person
 
 
@@ -22,6 +22,19 @@ class TestPerson:
         assert p.wealth == 900
         assert q.wealth == 1100
 
+    def test_random(self):
+        p = Person()
+        q = Person()
+        cycles = 10000
+        wins = 0
+        for i in range(cycles):
+            p.wealth = 1000
+            q.wealth = 1000
+            p.transact(q)
+            if p.wealth > q.wealth:
+                wins += 1
+        assert wins == pytest.approx(cycles/2, abs=cycles/20)
+
     def test_radius(self):
         p = Person()
         v = PersonView(p, 0, 0)
@@ -32,3 +45,13 @@ class TestPerson:
         assert len(wealths) == 1000
         sliced = wealths[250:1000]
         assert len(sliced) == 750
+
+    def test_scale(self):
+        assert scale_max(500) == 1000
+        assert scale_max(1000) == 2000
+        assert scale_max(2000) == 5000
+        assert scale_max(5000) == 10000
+        assert scale_max(10000) == 20000
+        assert scale_max(20000) == 50000
+        assert scale_max(50000) == 100000
+
