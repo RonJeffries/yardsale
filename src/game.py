@@ -61,7 +61,7 @@ class Game:
         self.people = []
         self.populate()
         if pygame.get_init():
-            self.score_font = pygame.font.SysFont("arial", 32)
+            self.score_font = pygame.font.SysFont("arial", 24)
             self.axis_font = pygame.font.SysFont("arial", 15)
 
     def populate(self):
@@ -115,6 +115,9 @@ class Game:
 
     def draw_histogram(self, richest, wealths, screen):
         self.draw_bars(wealths, richest, screen)
+        self.draw_scale(richest, screen)
+
+    def draw_scale(self, richest, screen):
         scale_text = f'{scale_max(richest)}'
         scale_surface = self.axis_font.render(scale_text, True, "green")
         screen.blit(scale_surface, (700, screen_size - 8))
@@ -141,7 +144,7 @@ class Game:
         return poorest, richest
 
     def display_loser_and_winner(self, poorest, richest, screen):
-        text = f'Min: {poorest:.0f} Max: {richest:.0f} ({richest / 1000:.0f}%)'
+        text = f'Min: {poorest:.0f} Max: {richest:.0f} (Richest person holds {richest / 1000:.0f}% of total wealth.)'
         score_surface = self.score_font.render(text, True, "green")
         screen.blit(score_surface, (20, screen_size))
 
