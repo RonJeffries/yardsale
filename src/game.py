@@ -108,13 +108,14 @@ class Game:
 
     def statistics(self, views, screen):
         pygame.draw.line(screen, "green", (0, screen_size), (screen_size - 55, screen_size))
-        wealths = sorted([view.person.wealth for view in views])
-        poorest, richest = self.get_loser_and_winner(views, wealths)
+        people_by_wealth = sorted([view.person for view in views], key=lambda person: person.wealth)
+        people_by_max_wealth = sorted([view.person for view in views], key=lambda person: person.max_wealth)
+        poorest, richest = self.get_loser_and_winner(views, people_by_wealth)
         self.display_loser_and_winner(poorest, richest, screen)
-        self.draw_histogram(richest, wealths, screen)
+        self.draw_histogram(richest, people_by_max_wealth, screen)
 
-    def draw_histogram(self, richest, wealths, screen):
-        self.draw_bars(wealths, richest, screen)
+    def draw_histogram(self, richest, people_by_wealth, screen):
+        self.draw_bars(people_by_wealth, richest, screen)
         self.draw_scale(richest, screen)
 
     def draw_scale(self, richest, screen):
@@ -122,29 +123,35 @@ class Game:
         scale_surface = self.axis_font.render(scale_text, True, "green")
         screen.blit(scale_surface, (700, screen_size - 8))
 
-    def draw_bars(self, wealths, richest, screen):
+    def draw_bars(self, people_by_wealth, richest, screen):
         scale = stats_space / scale_max(richest)
         min_height = 2
-        for wealth, x_pos in zip(wealths, itertools.count(7, 7)):
-            self.draw_one_bar(wealth, x_pos, scale, min_height, screen)
+        for person, x_pos in zip(people_by_wealth, itertools.count(7, 7)):
+            self.draw_one_bar(person, x_pos, scale, min_height, screen)
 
-    def draw_one_bar(self, wealth, x_pos, scale, min_height, screen):
-        height_of_bar = max(wealth * scale, min_height)
+    def draw_one_bar(self, person, x_pos, scale, min_height, screen):
         bottom_of_graph = screen_size + stats_space
-        top_of_bar = bottom_of_graph - height_of_bar
-        pygame.draw.rect(screen, "white", (x_pos, top_of_bar, 5, height_of_bar))
+        max_scaled = person.max_wealth * scale
+        cur_scaled = person.wealth * scale
+        min_scaled = max(person.min_wealth * scale, min_height)
+        top_of_max = bottom_of_graph - max_scaled
+        top_of_cur = bottom_of_graph - cur_scaled
+        top_of_min = bottom_of_graph - min_scaled
+        pygame.draw.rect(screen, "green", (x_pos, top_of_max, 5, max_scaled - cur_scaled))
+        pygame.draw.rect(screen, "white", (x_pos, top_of_cur, 5, cur_scaled - min_scaled))
+        pygame.draw.rect(screen, "red", (x_pos, top_of_min, 5, min_scaled))
 
-    def get_loser_and_winner(self, views, wealths):
-        richest = wealths[-1]
-        poorest = wealths[0]
-        for v in views:
-            w = v.person.wealth
-            richest = max(richest, w)
-            poorest = min(poorest, w)
+    def get_loser_and_winner(self, views, people_by_wealth):
+        richest = people_by_wealth[-1]
+        poorest = people_by_wealth[0]
+        # for v in views:
+        #     w = v.person.wealth
+        #     richest = max(richest, w)
+        #     poorest = min(poorest, w)
         return poorest, richest
 
     def display_loser_and_winner(self, poorest, richest, screen):
-        text = f'Min: {poorest:.0f} Max: {richest:.0f} (Richest person holds {richest / 1000:.0f}% of total wealth.)'
+        text = f'Min: {poorest.wealth:.0f} Max: {richest.wealth:.0f} (Richest person holds {richest.wealth / 1000:.0f}% of total wealth.)'
         score_surface = self.score_font.render(text, True, "green")
         screen.blit(score_surface, (20, screen_size))
 
@@ -159,7 +166,9 @@ class Game:
                 p2.move()
 
 
-def scale_max(value):
+def scale_max(person):
+    return 4000
+    value = person.wealth
     table = [1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000]
     for limit in table:
         if value < limit:

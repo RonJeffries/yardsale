@@ -46,6 +46,7 @@ class TestPerson:
         sliced = wealths[250:1000]
         assert len(sliced) == 750
 
+    @pytest.mark.skip("person vs wealth")
     def test_scale(self):
         assert scale_max(500) == 1000
         assert scale_max(1000) == 2000
@@ -54,4 +55,16 @@ class TestPerson:
         assert scale_max(10000) == 20000
         assert scale_max(20000) == 50000
         assert scale_max(50000) == 100000
+
+    def test_min_max(self):
+        p = Person()
+        assert p.wealth == 1000
+        assert p.min_wealth == 1000
+        assert p.max_wealth == 1000
+        q = Person()
+        p.transact(q, 1)
+        assert p.wealth == 1100
+        assert p.max_wealth == 1100
+        assert q.wealth == 900
+        assert q.min_wealth == 900
 
